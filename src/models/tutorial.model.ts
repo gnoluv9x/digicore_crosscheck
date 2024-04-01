@@ -1,6 +1,6 @@
 import { ResultSetHeader } from 'mysql2';
-import connection from '../db';
-import Tutorial, { ITutorialModel } from '../types/tutorial.type';
+import connection from '@/db';
+import Tutorial, { ITutorialModel } from '@/types/tutorial.type';
 
 class TutorialModel implements ITutorialModel {
   save(tutorial: Tutorial): Promise<Tutorial> {

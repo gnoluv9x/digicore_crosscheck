@@ -1,43 +1,28 @@
+import TransactionController from '@/controllers/transaction.controller';
+import SchemaValidatorMiddleware from '@/middlewares';
+import { createTransactionSchema } from '@/validators/transaction.schema';
 import { Router } from 'express';
-import ValidatorMiddleWare from '../middlewares';
-import { tutorialSchema } from '../validators/tutorial.schema';
 
 class TransactionRoutes {
   router = Router();
+  controller = new TransactionController();
 
   constructor() {
     this.intializeRoutes();
   }
 
   intializeRoutes() {
-    // Create a new Tutorial
-    this.router.post('/', ValidatorMiddleWare.validate(tutorialSchema));
+    this.router.post('/', SchemaValidatorMiddleware.validate(createTransactionSchema), this.controller.create);
 
-    //   // Retrieve all Tutorials
-    //   this.router.get('/', this.controller.findAll);
+    this.router.get('/', this.controller.findAll);
 
-    //   // Retrieve all published Tutorials
-    //   this.router.get('/published', this.controller.findAllPublished);
+    this.router.get('/:id', this.controller.findOne);
 
-    //   // Retrieve a single Tutorial with id
-    //   this.router.get('/:id', this.controller.findOne);
+    this.router.put('/:id', this.controller.update);
 
-    //   // Update a Tutorial with id
-    //   this.router.put('/:id', this.controller.update);
+    this.router.delete('/:id', this.controller.delete);
 
-    //   // Delete a Tutorial with id
-    //   this.router.delete('/:id', this.controller.delete);
-
-    //   // Delete all Tutorials
-    //   this.router.delete('/', this.controller.deleteAll);
-
-    //   // test upload file
-    //   this.router.post(
-    //     '/upload',
-    //     this.excelMiddleWare.handleUpload,
-    //     this.excelMiddleWare.validateExcelFile,
-    //     this.controller.uploadFile,
-    //   );
+    this.router.delete('/', this.controller.deleteAll);
   }
 }
 

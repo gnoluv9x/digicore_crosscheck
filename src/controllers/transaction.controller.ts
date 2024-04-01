@@ -1,37 +1,44 @@
+import { DEFAULT_LIMIT, DEFAULT_PAGE } from '@/constants';
+import transactionModel from '@/models/transaction.model';
+import ITransaction from '@/types/transaction.type';
 import { Request, Response } from 'express';
-import tutorialModel from '../models/tutorial.model';
-import { CustomRequest } from '../types/request.type';
-import Tutorial from '../types/tutorial.type';
-import ITransaction from '../types/transaction.type';
 
 export default class TransactionController {
   async create(req: Request, res: Response) {
     try {
       const transaction: ITransaction = req.body;
-      const savedTutorial = await tutorialModel.save(transaction);
+      console.log('============== Debug_here transaction ==============');
+      console.dir(transaction, { depth: null });
+      const savedTrans = await transactionModel.save(transaction);
 
-      res.status(201).send({ success: true, message: 'Thêm mới thành công', data: savedTutorial });
+      res.status(201).send({ success: true, message: 'Thêm mới thành công', data: savedTrans });
     } catch (err) {
       console.log('Debug_here err: ', err);
       res.status(500).send({
-        message: 'Some error occurred while retrieving tutorials.',
+        message: 'Some error occurred while retrieving transactions.',
       });
     }
   }
 
   async findAll(req: Request, res: Response) {
-    const title = typeof req.query.title === 'string' ? req.query.title : '';
+    const productName = typeof req.query.productName === 'string' ? req.query.productName : '';
+    const phoneNumber = typeof req.query.phoneNumber === 'string' ? req.query.phoneNumber : '';
+    const limit = typeof req.query.limit === 'string' ? parseInt(req.query.limit) : DEFAULT_LIMIT;
+    const page = typeof req.query.page === 'string' ? parseInt(req.query.page) : DEFAULT_PAGE;
+
+    console.log('============== Debug_here req.query ==============');
+    console.dir(req.query, { depth: null });
 
     try {
-      const tutorials = await tutorialModel.retrieveAll({ title });
+      const trans = await transactionModel.retrieveAll({ productName, phoneNumber, limit, page });
 
-      res.status(200).send(tutorials);
+      res.status(200).send(trans);
     } catch (err) {
       console.log('============== Debug_here err ==============');
       console.dir(err, { depth: null });
 
       res.status(500).send({
-        message: 'Some error occurred while retrieving tutorials.',
+        message: 'Some error occurred while retrieving transactions.',
       });
     }
   }
@@ -40,40 +47,41 @@ export default class TransactionController {
     const id: number = parseInt(req.params.id);
 
     try {
-      const tutorial = await tutorialModel.retrieveById(id);
+      const transaction = await transactionModel.retrieveById(id);
 
-      if (tutorial) res.status(200).send(tutorial);
+      if (transaction) res.status(200).send(transaction);
       else
         res.status(404).send({
-          message: `Cannot find Tutorial with id=${id}.`,
+          message: `Cannot find transaction with id=${id}.`,
         });
     } catch (err) {
       res.status(500).send({
-        message: `Error retrieving Tutorial with id=${id}.`,
+        message: `Error retrieving transaction with id=${id}.`,
       });
     }
   }
 
   async update(req: Request, res: Response) {
-    const tutorial: Tutorial = req.body;
-    tutorial.id = parseInt(req.params.id);
+    const transaction: ITransaction = req.body;
+    transaction.id = parseInt(req.params.id);
 
     try {
-      const num = await tutorialModel.update(tutorial);
-      console.log('Debug_here num: ', num);
+      const num = await transactionModel.update(transaction);
 
       if (num == 1) {
         res.send({
-          message: 'Tutorial was updated successfully.',
+          message: 'Transaction was updated successfully.',
         });
       } else {
         res.send({
-          message: `Cannot update Tutorial with id=${tutorial.id}. Maybe Tutorial was not found or req.body is empty!`,
+          message: `Cannot update transaction with id=${transaction.id}. Maybe transaction was not found or req.body is empty!`,
         });
       }
     } catch (err) {
+      console.log('============== Debug_here err ==============');
+      console.dir(err, { depth: null });
       res.status(500).send({
-        message: `Error updating Tutorial with id=${tutorial.id}.`,
+        message: `Error updating transaction with id=${transaction.id}.`,
       });
     }
   }
@@ -82,56 +90,33 @@ export default class TransactionController {
     const id: number = parseInt(req.params.id);
 
     try {
-      const num = await tutorialModel.delete(id);
+      const num = await transactionModel.delete(id);
 
       if (num == 1) {
         res.send({
-          message: 'Tutorial was deleted successfully!',
+          message: 'Transaction was deleted successfully!',
         });
       } else {
         res.send({
-          message: `Cannot delete Tutorial with id=${id}. Maybe Tutorial was not found!`,
+          message: `Cannot delete Transaction with id=${id}. Maybe Transaction was not found!`,
         });
       }
     } catch (err) {
       res.status(500).send({
-        message: `Could not delete Tutorial with id==${id}.`,
+        message: `Could not delete Transaction with id==${id}.`,
       });
     }
   }
 
   async deleteAll(req: Request, res: Response) {
     try {
-      const num = await tutorialModel.deleteAll();
+      const num = await transactionModel.deleteAll();
 
-      res.send({ message: `${num} Tutorials were deleted successfully!` });
+      res.send({ message: `${num} transactions were deleted successfully!` });
     } catch (err) {
       res.status(500).send({
-        message: 'Some error occurred while removing all tutorials.',
+        message: 'Some error occurred while removing all transactions.',
       });
-    }
-  }
-
-  async findAllPublished(req: Request, res: Response) {
-    try {
-      const tutorials = await tutorialModel.retrieveAll({ published: true });
-
-      res.status(200).send(tutorials);
-    } catch (err) {
-      res.status(500).send({
-        message: 'Some error occurred while retrieving tutorials.',
-      });
-    }
-  }
-
-  async uploadFile(req: CustomRequest, res: Response) {
-    try {
-      console.log('============== Debug_here req excelData ==============');
-      console.dir(req?.excelData, { depth: null });
-
-      res.status(200).json({ success: true });
-    } catch (error) {
-      console.log('Debug_here error: ', error);
     }
   }
 }

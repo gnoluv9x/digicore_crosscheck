@@ -1,4 +1,6 @@
-export const tutorialSchema = {
+import { Schema } from 'express-validator';
+
+export const tutorialSchema: Schema = {
   title: {
     exists: {
       errorMessage: 'Thiếu trường title',

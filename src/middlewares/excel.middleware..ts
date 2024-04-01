@@ -2,9 +2,10 @@ import { NextFunction, Response } from 'express';
 import fs from 'fs';
 import multer from 'multer';
 import xlsx from 'xlsx';
-import { IFile } from '../types/file.type';
-import { CustomRequest } from '../types/request.type';
-import { CROSSCHECK_EXCEL_HEADER_LIST, CROSSCHECK_EXCEL_SKIPPED_ROWS } from '../constants';
+import dayjs from 'dayjs';
+import { IFile } from '@/types/file.type';
+import { CustomRequest } from '@/types/request.type';
+import { CROSSCHECK_EXCEL_HEADER_LIST, CROSSCHECK_EXCEL_SKIPPED_ROWS } from '@/constants';
 
 class ExcelMiddleware {
   constructor() {
@@ -22,7 +23,7 @@ class ExcelMiddleware {
       cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
-      const uniqueSuffix = Date.now();
+      const uniqueSuffix = dayjs().format('DD_MM_YYYY-HH_mm_ss');
       cb(null, file.fieldname + '-' + uniqueSuffix + '.xlsx');
     },
   });
@@ -39,7 +40,7 @@ class ExcelMiddleware {
       }
       cb(null, true);
     },
-  }).single('excelFile');
+  }).single('file');
 
   public handleUpload(req: CustomRequest, res: Response, next: NextFunction) {
     this._uploadExcel(req, res, (err) => {
@@ -86,13 +87,6 @@ class ExcelMiddleware {
         return res.status(500).json({ error: 'Đã xảy ra lỗi khi xử lý file Excel.' });
       }
     });
-  }
-
-  public validateExcelFile(req: CustomRequest, res: Response, next: NextFunction) {
-    console.log('============== Debug_here req ==============');
-    console.dir(req?.excelData, { depth: null });
-
-    next();
   }
 }
 

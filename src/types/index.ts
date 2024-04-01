@@ -1,8 +1,8 @@
 export interface IBaseModel<T> {
-  save(tutorial: T): Promise<T>;
-  retrieveAll(searchParams: { title: string; published: boolean }): Promise<T[]>;
-  retrieveById(tutorialId: number): Promise<T | undefined>;
-  update(tutorial: T): Promise<number>;
-  delete(tutorialId: number): Promise<number>;
+  save(record: T): Promise<T>;
+  retrieveAll(searchParams: Partial<T>): Promise<T[]>;
+  retrieveById(recordId: number): Promise<T | undefined>;
+  update(record: T): Promise<number>;
+  delete(recordId: number): Promise<number>;
   deleteAll(): Promise<number>;
 }

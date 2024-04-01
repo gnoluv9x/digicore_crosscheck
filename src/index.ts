@@ -1,6 +1,6 @@
 import cors, { CorsOptions } from 'cors';
 import express, { Application } from 'express';
-import Routes from './routes';
+import Routes from '@/routes';
 
 export default class Server {
   constructor(app: Application) {

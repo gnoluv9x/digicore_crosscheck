@@ -1,7 +1,7 @@
+import tutorialModel from '@/models/tutorial.model';
+import { CustomRequest } from '@/types/request.type';
+import Tutorial from '@/types/tutorial.type';
 import { Request, Response } from 'express';
-import tutorialModel from '../models/tutorial.model';
-import { CustomRequest } from '../types/request.type';
-import Tutorial from '../types/tutorial.type';
 
 export default class TutorialController {
   async create(req: Request, res: Response) {

@@ -29,4 +29,13 @@ export default interface ITransaction extends RowDataPacket {
   createdAt?: string;
 }
 
-export interface ITransactionModel extends IBaseModel<ITransaction> {}
+export type TransactionSearchParams = {
+  productName?: string;
+  phoneNumber?: string;
+  limit: number;
+  page: number;
+};
+
+export interface ITransactionModel extends IBaseModel<Omit<ITransaction, 'retrieveAll'>> {
+  retrieveAll(searchParams: TransactionSearchParams): Promise<ITransaction[]>;
+}
