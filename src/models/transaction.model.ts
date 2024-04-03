@@ -33,7 +33,7 @@ class TransactionModel implements ITransactionModel {
     });
   }
 
-  async retrieveAll(searchParams?: Partial<TransactionSearchParams>): Promise<ITransaction[]> {
+  async retrieveAll(searchParams?: Partial<TransactionSearchParams>): Promise<Required<ITransaction>[]> {
     let query: string = `SELECT ${getAliasTransactionName()} FROM transactions`;
     let condition: string = '';
 
@@ -54,7 +54,7 @@ class TransactionModel implements ITransactionModel {
     console.log('Debug_here query: ', query);
 
     return new Promise((resolve, reject) => {
-      connection.query<ITransaction[]>(query, (err, res) => {
+      connection.query<Required<ITransaction>[]>(query, (err, res) => {
         if (err) reject(err);
         else resolve(res);
       });

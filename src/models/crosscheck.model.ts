@@ -1,5 +1,7 @@
 import connection from '@/db';
+import { getQueryStringUpdateCrosscheck } from '@/helper';
 import { ICrosscheck, ICrosscheckModel } from '@/types/crosscheck.type';
+import { ICrosscheckAfterMatchList } from '@/types/file.type';
 import { ResultSetHeader } from 'mysql2';
 
 class CrosscheckModel implements ICrosscheckModel {
@@ -20,7 +22,7 @@ class CrosscheckModel implements ICrosscheckModel {
         if (err) reject(err);
         else
           this.retrieveById(res.insertId)
-            .then((tutorial) => resolve(tutorial!))
+            .then((crosscheck) => resolve(crosscheck!))
             .catch(reject);
       });
     });
@@ -38,6 +40,17 @@ class CrosscheckModel implements ICrosscheckModel {
   updateTrans(crosscheckId: number, trans: number): Promise<number> {
     return new Promise((resolve, reject) => {
       connection.query<ResultSetHeader>('UPDATE crosscheck SET ? WHERE id = ?', [trans, crosscheckId], (err, res) => {
+        if (err) reject(err);
+        else resolve(res.affectedRows);
+      });
+    });
+  }
+
+  updateMultipleCrosscheck(listCrosscheck: ICrosscheckAfterMatchList[], crosscheckId: number): Promise<number> {
+    const queryString = getQueryStringUpdateCrosscheck(listCrosscheck, crosscheckId);
+
+    return new Promise((resolve, reject) => {
+      connection.query<ResultSetHeader>(queryString, (err, res) => {
         if (err) reject(err);
         else resolve(res.affectedRows);
       });

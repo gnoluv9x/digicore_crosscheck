@@ -15,7 +15,7 @@ if (process.env.NODE_ENV !== 'production') {
   dailyConfig.maxFiles = '7d';
 }
 
-console.log('Debug_here dailyConfig: ', dailyConfig);
+// console.log('Debug_here dailyConfig: ', dailyConfig);
 
 const logger = winston.createLogger({
   level: 'info',

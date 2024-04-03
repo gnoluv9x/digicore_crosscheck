@@ -3,7 +3,7 @@ import fs from 'fs';
 import multer from 'multer';
 import xlsx from 'xlsx';
 import dayjs from 'dayjs';
-import { IFile } from '@/types/file.type';
+import { ICrosscheckList, IFile, IFileRequest } from '@/types/file.type';
 import { CustomRequest } from '@/types/request.type';
 import { CROSSCHECK_EXCEL_HEADER_LIST, CROSSCHECK_EXCEL_SKIPPED_ROWS } from '@/constants';
 
@@ -57,6 +57,8 @@ class ExcelMiddleware {
       if (!req.file) {
         return res.status(400).json({ error: 'Vui lòng chọn file Excel' });
       }
+      console.log('============== Debug_here req.file ==============');
+      console.dir(req.file, { depth: null });
 
       try {
         const workbook = xlsx.readFile(req.file.path);
@@ -67,17 +69,20 @@ class ExcelMiddleware {
         const range = xlsx.utils.decode_range(worksheet['!ref'] as string);
         range.s.r = CROSSCHECK_EXCEL_SKIPPED_ROWS;
 
-        const jsonData = xlsx.utils.sheet_to_json(worksheet, {
+        const jsonData: ICrosscheckList[] = xlsx.utils.sheet_to_json(worksheet, {
           rawNumbers: true,
           range,
           header: CROSSCHECK_EXCEL_HEADER_LIST,
         });
 
-        // truyền file sang middleware tiếp theo
-        req.excelData = jsonData;
+        const excelData: IFileRequest = {
+          excelData: jsonData,
+          fileName: req.file.filename,
+          filePath: req.file.destination,
+        };
 
-        // xoá file
-        // fs.unlinkSync(req.file.path);
+        // truyền file sang middleware tiếp theo
+        req.excelData = excelData;
 
         next();
       } catch (error) {

@@ -1,21 +1,29 @@
 import { EXCEL_FILE_DATE_FORMATED } from '@/constants';
+import { downloadExcel } from '@/helper';
 import crosscheckModel from '@/models/crosscheck.model';
 import transactionModel from '@/models/transaction.model';
 import { ICrosscheck } from '@/types/crosscheck.type';
+import { ICrosscheckAfterMatchList, IFileRequest } from '@/types/file.type';
 import { CustomRequest } from '@/types/request.type';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { Request, Response } from 'express';
+
 dayjs.extend(customParseFormat);
 
 export default class CrosscheckController {
   async match(req: CustomRequest, res: Response) {
     try {
-      const crossCheckData: any[] = req.excelData;
-      const listTransactions = await transactionModel.retrieveAll({ limit: 10, page: 1 });
+      const excelFiles: IFileRequest = req.excelData;
+      const crossCheckData = excelFiles.excelData;
+      const listTransactions = await transactionModel.retrieveAll({ limit: 10, page: 1 }); // TODO remove limit
+      console.log('============== Debug_here crossCheckData ==============');
+      console.dir(crossCheckData, { depth: null });
+      console.log('============== Debug_here listTransactions ==============');
+      console.dir(listTransactions, { depth: null });
 
       // Match các bản ghi trong file excel và db
-      const resultsCrosschecked = [];
+      const resultsCrosschecked: ICrosscheckAfterMatchList[] = [];
       crossCheckData.forEach((crosscheck) => {
         for (let i = 0; i < listTransactions.length; i++) {
           const tran = listTransactions[i];
@@ -24,32 +32,44 @@ export default class CrosscheckController {
 
           if (
             !tran.crossCheckId &&
-            crosscheck?.MGD === tran.orderId &&
-            crosscheck?.SDT === parseInt(tran.phoneNumber!) &&
-            crosscheck?.GIA_BAN === tran.totalPrice &&
+            parseInt(crosscheck.MGD as any) === tran.orderId &&
+            parseInt(crosscheck?.SDT as any) === parseInt(tran.phoneNumber) &&
+            parseFloat(crosscheck?.GIA_BAN as any) === tran.totalPrice &&
+            crosscheck?.GC === tran.productName &&
             isSameDay
           ) {
-            resultsCrosschecked.push(crosscheck);
+            resultsCrosschecked.push({ ...crosscheck, id: tran.id! });
             break;
           }
         }
       });
 
-      const resultsss = await crosscheckModel.save({
-        adminId: '123',
-        totalTrans: 123123,
-        fileName: 'file-213.xlsx',
-        filePath: 'sabc/csdcd',
+      if (resultsCrosschecked.length === 0) {
+        const fileName = 'cross_checked_' + dayjs().format('DD-MM-YYYY_HH-mm-ss') + '.xlsx';
+        downloadExcel(resultsCrosschecked, res, fileName);
+        return;
+      }
+
+      const adminId = req.headers.adminid as string;
+
+      const crosscheckCreated = await crosscheckModel.save({
+        adminId: parseInt(adminId),
+        fileName: excelFiles.fileName,
+        filePath: excelFiles.filePath,
+        totalTrans: 0,
       } as Required<ICrosscheck>);
 
-      console.log('============== Debug_here resultsss ==============');
-      console.dir(resultsss, { depth: null });
+      const crossCheckId = crosscheckCreated.id;
+      console.log('Debug_here crossCheckId: ', crossCheckId);
 
-      return res.status(200).send({ success: true });
+      await crosscheckModel.updateMultipleCrosscheck(resultsCrosschecked, crossCheckId);
+
+      const fileName = 'cross_checked_' + dayjs().format('DD-MM-YYYY_HH-mm-ss') + '.xlsx';
+      return downloadExcel(resultsCrosschecked, res, fileName);
     } catch (err) {
       console.log('Debug_here err: ', err);
       return res.status(500).send({
-        message: 'Some error occurred while retrieving transactions.',
+        message: 'Có lỗi xảy ra khi đối soát.',
       });
     }
   }
