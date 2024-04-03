@@ -5,14 +5,15 @@ import { Router } from 'express';
 class CrosscheckRoutes {
   router = Router();
   excelMiddleWare = new ExcelMiddleware();
-  crosscheckMiddleware = new CrosscheckController();
+  crosscheckController = new CrosscheckController();
 
   constructor() {
     this.intializeRoutes();
   }
 
   intializeRoutes() {
-    this.router.post('/', this.excelMiddleWare.handleUpload, this.crosscheckMiddleware.create);
+    this.router.post('/', this.excelMiddleWare.handleUpload, this.crosscheckController.match);
+    this.router.post('/create', this.crosscheckController.create);
   }
 }
 

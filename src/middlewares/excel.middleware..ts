@@ -59,7 +59,6 @@ class ExcelMiddleware {
       }
 
       try {
-        console.log('Debug_here file infos:', req.file);
         const workbook = xlsx.readFile(req.file.path);
         const sheetName = workbook.SheetNames[0]; // Giả sử chỉ có 1 sheet
         const worksheet = workbook.Sheets[sheetName];
@@ -73,7 +72,6 @@ class ExcelMiddleware {
           range,
           header: CROSSCHECK_EXCEL_HEADER_LIST,
         });
-        console.log('Debug_here jsonData in excel middleware ', jsonData);
 
         // truyền file sang middleware tiếp theo
         req.excelData = jsonData;

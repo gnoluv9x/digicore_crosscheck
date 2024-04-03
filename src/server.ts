@@ -1,6 +1,6 @@
 import express, { Application } from 'express';
-import Server from '.';
 import logger from '@/lib/logger';
+import Server from '@/index';
 
 const app: Application = express();
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

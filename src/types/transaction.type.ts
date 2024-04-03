@@ -37,5 +37,5 @@ export type TransactionSearchParams = {
 };
 
 export interface ITransactionModel extends IBaseModel<Omit<ITransaction, 'retrieveAll'>> {
-  retrieveAll(searchParams: TransactionSearchParams): Promise<ITransaction[]>;
+  retrieveAll(searchParams: Partial<TransactionSearchParams>): Promise<ITransaction[]>;
 }

@@ -1,4 +1,4 @@
-import { TRANSACTION_KEY } from '@/constants';
+import { PAGINATION_UNLIMIT, TRANSACTION_KEY } from '@/constants';
 import { convertCamelToSnakeCase, getAliasTransactionName } from '@/helper';
 import ITransaction, { ITransactionModel, TransactionSearchParams } from '@/types/transaction.type';
 import { ResultSetHeader } from 'mysql2';
@@ -33,21 +33,25 @@ class TransactionModel implements ITransactionModel {
     });
   }
 
-  async retrieveAll(searchParams: TransactionSearchParams): Promise<ITransaction[]> {
+  async retrieveAll(searchParams?: Partial<TransactionSearchParams>): Promise<ITransaction[]> {
     let query: string = `SELECT ${getAliasTransactionName()} FROM transactions`;
     let condition: string = '';
 
-    if (searchParams.productName) {
+    if (searchParams?.productName) {
       condition += `LOWER(product_name) LIKE '%${searchParams.productName}%'`;
     }
 
-    if (searchParams.phoneNumber) {
+    if (searchParams?.phoneNumber) {
       condition += ` AND LOWER(phone_number) LIKE '%${searchParams.phoneNumber}%'`;
     }
 
     if (condition.length) query += ' WHERE ' + condition;
 
-    query += ` LIMIT ${searchParams.limit} OFFSET ${(searchParams.page - 1) * searchParams.limit}`;
+    if (searchParams?.page && searchParams?.limit && searchParams.limit !== PAGINATION_UNLIMIT) {
+      query += ` LIMIT ${searchParams.limit} OFFSET ${(searchParams.page - 1) * searchParams.limit}`;
+    }
+
+    console.log('Debug_here query: ', query);
 
     return new Promise((resolve, reject) => {
       connection.query<ITransaction[]>(query, (err, res) => {
@@ -73,7 +77,7 @@ class TransactionModel implements ITransactionModel {
 
   update(transaction: ITransaction): Promise<number> {
     const { id: transactionId, ...restTrans } = transaction;
-    const newTrans: { [K: string]: any } = Object.keys(restTrans).reduce((prev: any, curKey: string) => {
+    const newTrans: Record<string, any> = Object.keys(restTrans).reduce((prev: any, curKey: string) => {
       const newKey = convertCamelToSnakeCase(curKey);
       const newVal = restTrans[curKey];
       prev[newKey] = newVal;

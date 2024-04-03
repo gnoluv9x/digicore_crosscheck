@@ -1,3 +1,4 @@
+import { ICrosscheck } from '@/types/crosscheck.type';
 import ITransaction from '@/types/transaction.type';
 
 export const CROSSCHECK_EXCEL_SKIPPED_ROWS = 5;
@@ -40,7 +41,16 @@ export const TRANSACTION_KEY: Record<keyof ITransaction, string> = {
   createdAt: 'created_at',
 };
 
+export const CROSSCHECK_KEY: Record<keyof ICrosscheck, string> = {
+  fileName: 'file_name',
+  filePath: 'file_path',
+  adminId: 'admin_id',
+  totalTrans: 'total_trans'
+};
+
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_LIMIT = 10;
 
 export const DATE_FORMATED = 'YYYY-MM-DD HH:mm:ss';
+export const EXCEL_FILE_DATE_FORMATED = 'DD-MM-YYYY HH:mm:ss';
+export const PAGINATION_UNLIMIT = -1;
