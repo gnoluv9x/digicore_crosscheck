@@ -1,5 +1,6 @@
 import { RowDataPacket } from 'mysql2';
 import { IBaseModel } from '.';
+import { FileDateRange } from '@/types/file.type';
 
 type PRODUCT_TYPE = 'packagemobile' | 'card' | 'datacode' | 'sim';
 type ORDER_STATUS_TYPE = 'success' | 'pending' | 'fail';
@@ -34,6 +35,7 @@ export type TransactionSearchParams = {
   phoneNumber?: string;
   limit: number;
   page: number;
+  fileDateRange: FileDateRange;
 };
 
 export interface ITransactionModel extends IBaseModel<Omit<ITransaction, 'retrieveAll'>> {

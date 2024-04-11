@@ -1,8 +1,17 @@
-import { PAGINATION_UNLIMIT, TRANSACTION_KEY } from '@/constants';
+import {
+  DATE_FORMATED,
+  EXCEL_FILE_DATE_FORMATED,
+  MONTH_IN_PAST,
+  PAGINATION_UNLIMIT,
+  TRANSACTION_KEY,
+} from '@/constants';
 import { convertCamelToSnakeCase, getAliasTransactionName } from '@/helper';
 import ITransaction, { ITransactionModel, TransactionSearchParams } from '@/types/transaction.type';
 import { ResultSetHeader } from 'mysql2';
 import connection from '@/db';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+dayjs.extend(customParseFormat);
 
 class TransactionModel implements ITransactionModel {
   save(transaction: ITransaction): Promise<ITransaction> {
@@ -42,7 +51,17 @@ class TransactionModel implements ITransactionModel {
     }
 
     if (searchParams?.phoneNumber) {
-      condition += ` AND LOWER(phone_number) LIKE '%${searchParams.phoneNumber}%'`;
+      condition += ` AND phone_number LIKE '%${searchParams.phoneNumber}%'`;
+    }
+
+    if (searchParams?.fileDateRange) {
+      const from = searchParams?.fileDateRange?.from
+        ? dayjs(searchParams?.fileDateRange?.from, EXCEL_FILE_DATE_FORMATED).format(DATE_FORMATED)
+        : dayjs().subtract(MONTH_IN_PAST, 'month').format(DATE_FORMATED);
+      const to = searchParams?.fileDateRange?.to
+        ? dayjs(searchParams?.fileDateRange?.to, EXCEL_FILE_DATE_FORMATED).format(DATE_FORMATED)
+        : dayjs().format(DATE_FORMATED);
+      condition += ` AND date BETWEEN ${from} AND ${to}`;
     }
 
     if (condition.length) query += ' WHERE ' + condition;
@@ -50,8 +69,6 @@ class TransactionModel implements ITransactionModel {
     if (searchParams?.page && searchParams?.limit && searchParams.limit !== PAGINATION_UNLIMIT) {
       query += ` LIMIT ${searchParams.limit} OFFSET ${(searchParams.page - 1) * searchParams.limit}`;
     }
-
-    console.log('Debug_here query: ', query);
 
     return new Promise((resolve, reject) => {
       connection.query<Required<ITransaction>[]>(query, (err, res) => {
@@ -67,7 +84,6 @@ class TransactionModel implements ITransactionModel {
         `SELECT ${getAliasTransactionName()} FROM transactions WHERE id = ?`,
         [transactionId],
         (err, res) => {
-          console.log('Debug_here res: ', res);
           if (err) reject(err);
           else resolve(res?.[0]);
         },

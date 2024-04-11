@@ -1,10 +1,9 @@
-import { DATE_FORMATED, TRANSACTION_KEY } from '@/constants';
-import { ICrosscheckAfterMatchList } from '@/types/file.type';
+import { DATE_FORMATED, EXCEL_FILE_DATE_FORMATED, TRANSACTION_KEY } from '@/constants';
+import { FileDateRange, ICrosscheckAfterMatchList } from '@/types/file.type';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { Response } from 'express';
 import xlsx from 'xlsx';
-
 dayjs.extend(customParseFormat);
 
 export const convertCamelToSnakeCase = (str: string): string => {
@@ -63,7 +62,7 @@ export const getQueryStringUpdateCrosscheck = (
     crossCheckStatus += `when id = ${crosscheck.id} then '${crosscheck.TT === 'Thành công' ? '1' : '0'}' `;
 
     const date = crosscheck.THOI_GIAN
-      ? dayjs(crosscheck.THOI_GIAN, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD HH:mm:ss')
+      ? dayjs(crosscheck.THOI_GIAN, EXCEL_FILE_DATE_FORMATED).format('YYYY-MM-DD HH:mm:ss')
       : '';
 
     crossCheckDate += `when id = ${crosscheck.id} then '${date}' `;
@@ -77,13 +76,18 @@ export const getQueryStringUpdateCrosscheck = (
   return queryString;
 };
 
-export function downloadExcel(listings: any[], res: Response, filename?: string) {
+export function downloadExcel(listings: any[], res: Response, dateRange: FileDateRange, filename?: string) {
   try {
     const workbook = xlsx.utils.book_new();
 
-    const worksheet = xlsx.utils.json_to_sheet(listings);
+    const dateRangeString = `Từ ngày: ${dateRange?.from || '---'} đến ngày: ${dateRange?.to || '---'} `;
 
-    xlsx.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    const generalSheet = xlsx.utils.aoa_to_sheet([['TỔNG HỢP KẾT QUẢ BÁN GÓI QUA 9084'], [dateRangeString], listings]);
+
+    const detailsSheet = xlsx.utils.aoa_to_sheet([['CHI TIẾT KẾT QUẢ BÁN GÓI QUA 9084'], [dateRangeString], []]);
+
+    xlsx.utils.book_append_sheet(workbook, generalSheet, 'Tổng hợp');
+    xlsx.utils.book_append_sheet(workbook, detailsSheet, 'Chi tiết');
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', 'attachment; filename=' + filename);
@@ -96,3 +100,19 @@ export function downloadExcel(listings: any[], res: Response, filename?: string)
     return res.status(500).send('Error generating Excel file');
   }
 }
+
+export const generateCrosscheckFileName = () => {
+  const fileName = 'MBS_Bao_cao_ban_goi_VAS_9084__' + dayjs().format('HH_mm_ss_DD_MM_YYYY') + '.xlsx';
+
+  return encodeURIComponent(fileName);
+};
+
+export const getDateRange = (str: string): FileDateRange => {
+  if (!str) return { from: '', to: '' };
+
+  const datePattern = /(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2})/g;
+
+  const dates = str.match(datePattern) as string[];
+
+  return { from: dates[0], to: dates[1] };
+};

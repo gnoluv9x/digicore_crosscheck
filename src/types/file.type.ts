@@ -7,10 +7,16 @@ export interface IFile {
   size: number;
 }
 
+export type FileDateRange = {
+  from: string | undefined;
+  to: string | undefined;
+};
+
 export interface IFileRequest {
   fileName: string;
   filePath: string;
   excelData: ICrosscheckList[];
+  fileDateRange: FileDateRange;
 }
 
 export interface ICrosscheckList {

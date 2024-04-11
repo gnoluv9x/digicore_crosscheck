@@ -7,8 +7,7 @@ export default class TransactionController {
   async create(req: Request, res: Response) {
     try {
       const transaction: ITransaction = req.body;
-      console.log('============== Debug_here transaction ==============');
-      console.dir(transaction, { depth: null });
+      console.log('Debug_here transaction: ', transaction);
       const savedTrans = await transactionModel.save(transaction);
 
       res.status(201).send({ success: true, message: 'Thêm mới thành công', data: savedTrans });
@@ -26,16 +25,14 @@ export default class TransactionController {
     const limit = typeof req.query.limit === 'string' ? parseInt(req.query.limit) : DEFAULT_LIMIT;
     const page = typeof req.query.page === 'string' ? parseInt(req.query.page) : DEFAULT_PAGE;
 
-    console.log('============== Debug_here req.query ==============');
-    console.dir(req.query, { depth: null });
+    console.log('Debug_here req.query: ', req.query);
 
     try {
       const trans = await transactionModel.retrieveAll({ productName, phoneNumber, limit, page });
 
       res.status(200).send(trans);
     } catch (err) {
-      console.log('============== Debug_here err ==============');
-      console.dir(err, { depth: null });
+      console.error('Debug_here err: ', err);
 
       res.status(500).send({
         message: 'Some error occurred while retrieving transactions.',
@@ -78,8 +75,7 @@ export default class TransactionController {
         });
       }
     } catch (err) {
-      console.log('============== Debug_here err ==============');
-      console.dir(err, { depth: null });
+      console.error(err);
       res.status(500).send({
         message: `Error updating transaction with id=${transaction.id}.`,
       });

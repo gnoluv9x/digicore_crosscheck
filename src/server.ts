@@ -5,7 +5,7 @@ import Server from '@/index';
 const app: Application = express();
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const server: Server = new Server(app);
-const PORT: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
+const PORT: number = process.env.SERVER_PORT ? parseInt(process.env.SERVER_PORT, 10) : 8000;
 
 // override console.* function
 console.log = (...args: any[]) => logger.info.call(logger, args);
@@ -20,8 +20,8 @@ app
   })
   .on('error', (err: any) => {
     if (err.code === 'EADDRINUSE') {
-      console.log('Error: address already in use');
+      console.error('Error: address already in use');
     } else {
-      console.log(err);
+      console.error(err);
     }
   });

@@ -1,5 +1,5 @@
 import { EXCEL_FILE_DATE_FORMATED } from '@/constants';
-import { downloadExcel } from '@/helper';
+import { downloadExcel, generateCrosscheckFileName } from '@/helper';
 import crosscheckModel from '@/models/crosscheck.model';
 import transactionModel from '@/models/transaction.model';
 import { ICrosscheck } from '@/types/crosscheck.type';
@@ -16,11 +16,11 @@ export default class CrosscheckController {
     try {
       const excelFiles: IFileRequest = req.excelData;
       const crossCheckData = excelFiles.excelData;
-      const listTransactions = await transactionModel.retrieveAll({ limit: 10, page: 1 }); // TODO remove limit
-      console.log('============== Debug_here crossCheckData ==============');
-      console.dir(crossCheckData, { depth: null });
-      console.log('============== Debug_here listTransactions ==============');
-      console.dir(listTransactions, { depth: null });
+      console.log('Debug_here crossCheckData: ', crossCheckData);
+      const listTransactions = await transactionModel.retrieveAll({ fileDateRange: excelFiles.fileDateRange }); // TODO remove limit
+      console.log('Debug_here listTransactions: ', listTransactions);
+
+      // logger.log('info', 'Starting up with config %j', 'day la string');
 
       // Match các bản ghi trong file excel và db
       const resultsCrosschecked: ICrosscheckAfterMatchList[] = [];
@@ -45,9 +45,9 @@ export default class CrosscheckController {
       });
 
       if (resultsCrosschecked.length === 0) {
-        const fileName = 'cross_checked_' + dayjs().format('DD-MM-YYYY_HH-mm-ss') + '.xlsx';
-        downloadExcel(resultsCrosschecked, res, fileName);
-        return;
+        const fileName = generateCrosscheckFileName();
+        console.log('Debug_here fileName: ', fileName);
+        return downloadExcel(resultsCrosschecked, res, excelFiles.fileDateRange, fileName);
       }
 
       const adminId = req.headers.adminid as string;
@@ -64,8 +64,11 @@ export default class CrosscheckController {
 
       await crosscheckModel.updateMultipleCrosscheck(resultsCrosschecked, crossCheckId);
 
-      const fileName = 'cross_checked_' + dayjs().format('DD-MM-YYYY_HH-mm-ss') + '.xlsx';
-      return downloadExcel(resultsCrosschecked, res, fileName);
+      const fileName = generateCrosscheckFileName();
+
+      console.log('Debug_here resultsCrosschecked: ', resultsCrosschecked);
+
+      return downloadExcel(resultsCrosschecked, res, excelFiles.fileDateRange, fileName);
     } catch (err) {
       console.log('Debug_here err: ', err);
       return res.status(500).send({
@@ -77,10 +80,9 @@ export default class CrosscheckController {
   async create(req: Request, res: Response) {
     try {
       const reqBody: Required<ICrosscheck> = req.body;
-      console.log('============== Debug_here reqBody ==============');
-      console.dir(reqBody, { depth: null });
-      const resp = await crosscheckModel.save(reqBody);
-      console.log('Debug_here resp: ', resp);
+      console.log('Debug_here reqBody: ', reqBody);
+      await crosscheckModel.save(reqBody);
+
       return res.status(200).send({ success: true });
     } catch (error) {
       console.log('Debug_here error: ', error);

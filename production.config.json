@@ -1,0 +1,11 @@
+{
+  "apps": [
+    {
+      "name": "crosscheck",
+      "script": "yarn",
+      "args": "start",
+      "interpreter": "none",
+      "instances": 1
+    }
+  ]
+}

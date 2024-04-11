@@ -5,7 +5,12 @@ import xlsx from 'xlsx';
 import dayjs from 'dayjs';
 import { ICrosscheckList, IFile, IFileRequest } from '@/types/file.type';
 import { CustomRequest } from '@/types/request.type';
-import { CROSSCHECK_EXCEL_HEADER_LIST, CROSSCHECK_EXCEL_SKIPPED_ROWS } from '@/constants';
+import {
+  CROSSCHECK_EXCEL_HEADER_LIST,
+  CROSSCHECK_EXCEL_SKIPPED_COLUMNS,
+  CROSSCHECK_EXCEL_SKIPPED_ROWS,
+} from '@/constants';
+import { downloadExcel, generateCrosscheckFileName, getDateRange } from '@/helper';
 
 class ExcelMiddleware {
   constructor() {
@@ -45,40 +50,48 @@ class ExcelMiddleware {
   public handleUpload(req: CustomRequest, res: Response, next: NextFunction) {
     this._uploadExcel(req, res, (err) => {
       if (err instanceof multer.MulterError) {
-        console.log('============== Debug_here err ==============');
-        console.dir(err, { depth: null });
+        console.error('Debug_here err: ', err);
         return res.status(400).json({ error: 'Lỗi khi upload file' });
       } else if (err) {
-        console.log('============== Debug_here err ==============');
-        console.dir(err, { depth: null });
+        console.error('Debug_here err: ', err);
         return res.status(400).json({ error: err.message });
       }
 
       if (!req.file) {
         return res.status(400).json({ error: 'Vui lòng chọn file Excel' });
       }
-      console.log('============== Debug_here req.file ==============');
-      console.dir(req.file, { depth: null });
+      console.log('Debug_here req.file: ', req.file);
 
       try {
         const workbook = xlsx.readFile(req.file.path);
         const sheetName = workbook.SheetNames[0]; // Giả sử chỉ có 1 sheet
         const worksheet = workbook.Sheets[sheetName];
 
-        // skip x rows before read file
+        // skip rows, columns before read file
         const range = xlsx.utils.decode_range(worksheet['!ref'] as string);
         range.s.r = CROSSCHECK_EXCEL_SKIPPED_ROWS;
+        range.s.c = CROSSCHECK_EXCEL_SKIPPED_COLUMNS;
 
         const jsonData: ICrosscheckList[] = xlsx.utils.sheet_to_json(worksheet, {
           rawNumbers: true,
           range,
+          blankrows: false,
           header: CROSSCHECK_EXCEL_HEADER_LIST,
         });
 
+        const fileDateRange = getDateRange(jsonData[0].STT);
+
+        // file excel không có data
+        if (jsonData.length === 2) {
+          const fileName = generateCrosscheckFileName();
+          return downloadExcel([], res, fileDateRange, fileName);
+        }
+
         const excelData: IFileRequest = {
-          excelData: jsonData,
+          excelData: jsonData.slice(2),
           fileName: req.file.filename,
           filePath: req.file.destination,
+          fileDateRange: fileDateRange,
         };
 
         // truyền file sang middleware tiếp theo

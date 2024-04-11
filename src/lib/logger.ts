@@ -15,15 +15,24 @@ if (process.env.NODE_ENV !== 'production') {
   dailyConfig.maxFiles = '7d';
 }
 
-// console.log('Debug_here dailyConfig: ', dailyConfig);
-
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
     winston.format.timestamp({ format: 'hh:mm:ss DD-MM-YYYY' }),
     winston.format.splat(),
     winston.format.printf(({ timestamp, level, message }) => {
-      return `[${timestamp}] ${level.toUpperCase()}: ${message}`;
+      return `[${timestamp}] ${level.toUpperCase()}: ${
+        typeof message === 'object'
+          ? Object.values(message)
+              .map((i) => {
+                if (typeof i === 'object') {
+                  return JSON.stringify(i, null, 2);
+                }
+                return i;
+              })
+              .join('\n')
+          : message
+      }`;
     }),
   ),
   transports: [new winston.transports.Console(), new DailyRotateFile(dailyConfig)],

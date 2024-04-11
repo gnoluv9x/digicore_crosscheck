@@ -1,7 +1,8 @@
 import { ICrosscheck } from '@/types/crosscheck.type';
 import ITransaction from '@/types/transaction.type';
 
-export const CROSSCHECK_EXCEL_SKIPPED_ROWS = 5;
+export const CROSSCHECK_EXCEL_SKIPPED_ROWS = 1;
+export const CROSSCHECK_EXCEL_SKIPPED_COLUMNS = 1;
 
 export const CROSSCHECK_EXCEL_HEADER_LIST = [
   'STT',
@@ -54,3 +55,6 @@ export const DEFAULT_LIMIT = 10;
 export const DATE_FORMATED = 'YYYY-MM-DD HH:mm:ss';
 export const EXCEL_FILE_DATE_FORMATED = 'DD/MM/YYYY HH:mm';
 export const PAGINATION_UNLIMIT = -1;
+
+// Số tháng được dùng để giới hạn làm đối soát trong TH file excel không truyền khoảng ngày
+export const MONTH_IN_PAST = 1;
