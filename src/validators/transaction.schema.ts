@@ -17,7 +17,7 @@ export const createTransactionSchema: Schema = {
       errorMessage: 'orderId không được để trống',
       bail: true,
     },
-    isInt: {
+    isNumeric: {
       errorMessage: 'Định dạng orderId phải là số',
     },
   },

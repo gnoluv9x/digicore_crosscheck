@@ -22,7 +22,7 @@ class TransactionRoutes {
 
     this.router.delete('/:id', this.controller.delete);
 
-    this.router.delete('/', this.controller.deleteAll);
+    // this.router.delete('/', this.controller.deleteAll);
   }
 }
 

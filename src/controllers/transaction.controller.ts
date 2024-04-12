@@ -30,11 +30,12 @@ export default class TransactionController {
     try {
       const trans = await transactionModel.retrieveAll({ productName, phoneNumber, limit, page });
 
-      res.status(200).send(trans);
+      res.status(200).send({ success: true, data: trans });
     } catch (err) {
       console.error('Debug_here err: ', err);
 
       res.status(500).send({
+        success: false,
         message: 'Some error occurred while retrieving transactions.',
       });
     }
@@ -46,12 +47,13 @@ export default class TransactionController {
     try {
       const transaction = await transactionModel.retrieveById(id);
 
-      if (transaction) res.status(200).send(transaction);
+      if (transaction?.id) res.status(200).send({ success: true, data: transaction });
       else
         res.status(404).send({
           message: `Cannot find transaction with id=${id}.`,
         });
     } catch (err) {
+      console.log('Debug_here err: ', err);
       res.status(500).send({
         message: `Error retrieving transaction with id=${id}.`,
       });
@@ -63,9 +65,9 @@ export default class TransactionController {
     transaction.id = parseInt(req.params.id);
 
     try {
-      const num = await transactionModel.update(transaction);
+      const transactionUpdated = await transactionModel.update(transaction);
 
-      if (num == 1) {
+      if (transactionUpdated?.id) {
         res.send({
           message: 'Transaction was updated successfully.',
         });
@@ -86,9 +88,9 @@ export default class TransactionController {
     const id: number = parseInt(req.params.id);
 
     try {
-      const num = await transactionModel.delete(id);
+      const deletedTran = await transactionModel.delete(id);
 
-      if (num == 1) {
+      if (deletedTran?.id) {
         res.send({
           message: 'Transaction was deleted successfully!',
         });

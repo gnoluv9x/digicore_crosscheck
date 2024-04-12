@@ -14,6 +14,7 @@ class CrosscheckRoutes {
   intializeRoutes() {
     this.router.post('/', this.excelMiddleWare.handleUpload, this.crosscheckController.match);
     this.router.post('/create', this.crosscheckController.create);
+    this.router.get('/', this.crosscheckController.getAll);
   }
 }
 

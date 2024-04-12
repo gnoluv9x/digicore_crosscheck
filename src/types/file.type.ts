@@ -36,5 +36,5 @@ export interface ICrosscheckList {
 }
 
 export interface ICrosscheckAfterMatchList extends ICrosscheckList {
-  id: number;
+  tranId: number;
 }

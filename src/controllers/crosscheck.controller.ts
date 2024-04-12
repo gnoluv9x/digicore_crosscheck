@@ -17,10 +17,8 @@ export default class CrosscheckController {
       const excelFiles: IFileRequest = req.excelData;
       const crossCheckData = excelFiles.excelData;
       console.log('Debug_here crossCheckData: ', crossCheckData);
-      const listTransactions = await transactionModel.retrieveAll({ fileDateRange: excelFiles.fileDateRange }); // TODO remove limit
+      const listTransactions = await transactionModel.retrieveAll({ fileDateRange: excelFiles.fileDateRange });
       console.log('Debug_here listTransactions: ', listTransactions);
-
-      // logger.log('info', 'Starting up with config %j', 'day la string');
 
       // Match các bản ghi trong file excel và db
       const resultsCrosschecked: ICrosscheckAfterMatchList[] = [];
@@ -38,7 +36,7 @@ export default class CrosscheckController {
             crosscheck?.GC === tran.productName &&
             isSameDay
           ) {
-            resultsCrosschecked.push({ ...crosscheck, id: tran.id! });
+            resultsCrosschecked.push({ ...crosscheck, tranId: tran.id! });
             break;
           }
         }
@@ -57,12 +55,12 @@ export default class CrosscheckController {
         fileName: excelFiles.fileName,
         filePath: excelFiles.filePath,
         totalTrans: 0,
-      } as Required<ICrosscheck>);
+      });
 
-      const crossCheckId = crosscheckCreated.id;
+      const crossCheckId = crosscheckCreated?.id;
       console.log('Debug_here crossCheckId: ', crossCheckId);
 
-      await crosscheckModel.updateMultipleCrosscheck(resultsCrosschecked, crossCheckId);
+      await crosscheckModel.updateMultipleTransactions(resultsCrosschecked, crossCheckId!);
 
       const fileName = generateCrosscheckFileName();
 
@@ -88,6 +86,17 @@ export default class CrosscheckController {
       console.log('Debug_here error: ', error);
 
       return res.status(402).send({ success: true });
+    }
+  }
+
+  async getAll(req: Request, res: Response) {
+    try {
+      const page = req.params?.page ? parseInt(req.params?.page) : 1;
+      const limit = req.params?.limit ? parseInt(req.params?.limit) : 10;
+      const results = await crosscheckModel.retrieveAll({ page, limit });
+      res.json({ message: 'Thanh cong', data: results });
+    } catch (error) {
+      console.log('Debug_here error: ', error);
     }
   }
 }

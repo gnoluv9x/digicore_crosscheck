@@ -1,6 +1,7 @@
 import express, { Application } from 'express';
 import logger from '@/lib/logger';
 import Server from '@/index';
+import prisma from '@/lib/prisma';
 
 const app: Application = express();
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -15,13 +16,13 @@ console.error = (...args) => logger.error.call(logger, args);
 console.debug = (...args) => logger.debug.call(logger, args);
 
 app
-  .listen(PORT, function () {
-    console.log(`Server is running on port ${PORT} and http://localhost:${PORT}`);
+  .listen(PORT, async () => {
+    await prisma.$connect();
+    console.log('Connected to database');
+    console.log(`Server is running on port ${PORT}`);
   })
-  .on('error', (err: any) => {
-    if (err.code === 'EADDRINUSE') {
-      console.error('Error: address already in use');
-    } else {
-      console.error(err);
-    }
+  .on('error', async (err: any) => {
+    await prisma.$disconnect();
+    console.log('Debug_here err: ', err);
+    console.log(`Can not connect to database`);
   });

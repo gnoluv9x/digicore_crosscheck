@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model crosscheck {
+  id           Int            @id @default(autoincrement())
+  file_name    String?        @db.VarChar(200)
+  file_path    String?        @db.VarChar(100)
+  total_trans  Int?           @default(0)
+  admin_id     Int?
+  created_at   DateTime       @default(now()) @db.Timestamp(0)
+  transactions transactions[]
+}
+
+model transactions {
+  id                    Int                                 @id @default(autoincrement())
+  order_id              Int
+  phone_number          String                              @db.VarChar(20)
+  product_name          String                              @db.VarChar(100)
+  product_type          transactions_product_type?
+  package_register_type transactions_package_register_type?
+  order_status          transactions_order_status
+  provider              transactions_provider
+  total_price           Float?                              @db.Float
+  commission_agent      Float?                              @db.Float
+  commission_sub_agent  Float?                              @db.Float
+  agent_id              Int?
+  sub_agent_id          Int?
+  date                  DateTime?                           @db.Timestamp(0)
+  success_date          DateTime?                           @db.Timestamp(0)
+  cross_check_id        Int?
+  cross_check_status    transactions_cross_check_status?    @default(FAIL)
+  cross_check_date      DateTime?                           @db.Timestamp(0)
+  created_at            DateTime                            @default(now()) @db.Timestamp(0)
+  crosscheck            crosscheck?                         @relation(fields: [cross_check_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "fk_crosscheck")
+
+  @@index([cross_check_id], map: "fk_crosscheck")
+}
+
+enum transactions_product_type {
+  packagemobile
+  card
+  datacode
+  sim
+}
+
+enum transactions_package_register_type {
+  otp
+  sms
+}
+
+enum transactions_order_status {
+  success
+  pending
+  fail
+}
+
+enum transactions_provider {
+  mobifone
+  vinaphone
+  viettel
+}
+
+enum transactions_cross_check_status {
+  FAIL    @map("0")
+  SUCCESS @map("1")
+}

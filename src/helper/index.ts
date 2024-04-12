@@ -1,4 +1,4 @@
-import { DATE_FORMATED, EXCEL_FILE_DATE_FORMATED, TRANSACTION_KEY } from '@/constants';
+import { DATE_FORMATED, EXCEL_FILE_DATE_FORMATED } from '@/constants';
 import { FileDateRange, ICrosscheckAfterMatchList } from '@/types/file.type';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -16,14 +16,6 @@ export const convertSnakeToCamel = (str: string) => {
   if (!str) return '';
 
   return str.toLowerCase().replace(/([-_][a-z])/g, (group) => group.toUpperCase().replace('-', '').replace('_', ''));
-};
-
-export const getAliasTransactionName = () => {
-  const arr = Object.keys(TRANSACTION_KEY).map((key) => TRANSACTION_KEY[key] + ' as ' + key);
-
-  const result = arr.join(',');
-
-  return result;
 };
 
 export const isFloatNumber = (numb: number) => {
@@ -58,14 +50,14 @@ export const getQueryStringUpdateCrosscheck = (
   let crossCheckDate = 'cross_check_date  = (case ';
 
   listCrosscheck.forEach((crosscheck, idx, arr) => {
-    idsString += `${crosscheck.id}` + (idx !== arr.length - 1 ? ',' : '');
-    crossCheckStatus += `when id = ${crosscheck.id} then '${crosscheck.TT === 'Thành công' ? '1' : '0'}' `;
+    idsString += `${crosscheck.tranId}` + (idx !== arr.length - 1 ? ',' : '');
+    crossCheckStatus += `when id = ${crosscheck.tranId} then '${crosscheck.TT === 'Thành công' ? '1' : '0'}' `;
 
     const date = crosscheck.THOI_GIAN
-      ? dayjs(crosscheck.THOI_GIAN, EXCEL_FILE_DATE_FORMATED).format('YYYY-MM-DD HH:mm:ss')
+      ? dayjs(crosscheck.THOI_GIAN, EXCEL_FILE_DATE_FORMATED).format(DATE_FORMATED)
       : '';
 
-    crossCheckDate += `when id = ${crosscheck.id} then '${date}' `;
+    crossCheckDate += `when id = ${crosscheck.tranId} then '${date}' `;
   });
 
   crossCheckStatus += ' end)';

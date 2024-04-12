@@ -1,5 +1,4 @@
 import { ICrosscheck } from '@/types/crosscheck.type';
-import ITransaction from '@/types/transaction.type';
 
 export const CROSSCHECK_EXCEL_SKIPPED_ROWS = 1;
 export const CROSSCHECK_EXCEL_SKIPPED_COLUMNS = 1;
@@ -20,7 +19,7 @@ export const CROSSCHECK_EXCEL_HEADER_LIST = [
   'CTGD',
 ];
 
-export const TRANSACTION_KEY: Record<keyof ITransaction, string> = {
+export const TRANSACTION_KEY: Record<string, string> = {
   id: 'id',
   orderId: 'order_id',
   phoneNumber: 'phone_number',
@@ -42,7 +41,7 @@ export const TRANSACTION_KEY: Record<keyof ITransaction, string> = {
   createdAt: 'created_at',
 };
 
-export const CROSSCHECK_KEY: Record<keyof ICrosscheck, string> = {
+export const CROSSCHECK_KEY: Record<keyof Omit<ICrosscheck, 'id' | 'created_at'>, string> = {
   fileName: 'file_name',
   filePath: 'file_path',
   adminId: 'admin_id',
