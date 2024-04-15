@@ -36,3 +36,15 @@ export function convertCamelToSnakeInObject(obj: Record<string, any>, allowedCol
 
   return results;
 }
+
+export function getFieldsFromBody<T>(data: Record<string, any>, allowedLists: string[]): T {
+  const result = allowedLists.reduce((acc, key) => {
+    if (data.hasOwnProperty(key)) {
+      acc[key as keyof T] = data[key];
+    }
+
+    return acc;
+  }, {} as T);
+
+  return result;
+}

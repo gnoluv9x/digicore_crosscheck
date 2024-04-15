@@ -44,7 +44,7 @@ export default class CrosscheckController {
 
       if (resultsCrosschecked.length === 0) {
         const fileName = generateCrosscheckFileName();
-        console.log('Debug_here fileName: ', fileName);
+        console.log('Debug_here fileName with empty file: ', fileName);
         return downloadExcel(resultsCrosschecked, res, excelFiles.fileDateRange, fileName);
       }
 
@@ -60,11 +60,11 @@ export default class CrosscheckController {
       const crossCheckId = crosscheckCreated?.id;
       console.log('Debug_here crossCheckId: ', crossCheckId);
 
-      await crosscheckModel.updateMultipleTransactions(resultsCrosschecked, crossCheckId!);
+      const updatedRecords = await crosscheckModel.updateMultipleTransactions(resultsCrosschecked, crossCheckId!);
+
+      await crosscheckModel.updateTotalTrans(crossCheckId!, updatedRecords?.length || 0);
 
       const fileName = generateCrosscheckFileName();
-
-      console.log('Debug_here resultsCrosschecked: ', resultsCrosschecked);
 
       return downloadExcel(resultsCrosschecked, res, excelFiles.fileDateRange, fileName);
     } catch (err) {

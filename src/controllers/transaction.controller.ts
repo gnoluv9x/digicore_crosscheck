@@ -1,12 +1,13 @@
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from '@/constants';
 import transactionModel from '@/models/transaction.model';
 import ITransaction from '@/types/transaction.type';
+import { Prisma } from '@prisma/client';
 import { Request, Response } from 'express';
 
 export default class TransactionController {
   async create(req: Request, res: Response) {
     try {
-      const transaction: ITransaction = req.body;
+      const transaction: Prisma.transactionsCreateInput = req.body;
       console.log('Debug_here transaction: ', transaction);
       const savedTrans = await transactionModel.save(transaction);
 

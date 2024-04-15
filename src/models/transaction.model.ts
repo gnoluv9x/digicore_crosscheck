@@ -1,18 +1,19 @@
-import { EXCEL_FILE_DATE_FORMATED, MONTH_IN_PAST, PAGINATION_UNLIMIT } from '@/constants';
-import { ALLOWED_FIELDS_TO_CREATE, ALLOWED_FIELDS_TO_UPDATE } from '@/constants/transaction';
-import { convertCamelToSnakeInObject, convertSnakeKeyToCamelInObject } from '@/helper/utils';
+import { DATE_FORMATED, EXCEL_FILE_DATE_FORMATED, MONTH_IN_PAST, PAGINATION_UNLIMIT } from '@/constants';
+import { ALLOWED_TRANSACTION_FIELDS_TO_CREATE, ALLOWED_TRANSACTION_FIELDS_TO_UPDATE } from '@/constants/transaction';
+import { convertSnakeKeyToCamelInObject, getFieldsFromBody } from '@/helper/utils';
 import prisma from '@/lib/prisma';
 import ITransaction, { TransactionSearchParams } from '@/types/transaction.type';
+import { Prisma } from '@prisma/client';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 dayjs.extend(customParseFormat);
 
 class TransactionModel {
-  public async save(transaction: ITransaction) {
+  public async save(transaction: Prisma.transactionsCreateInput) {
     try {
-      const data = convertCamelToSnakeInObject(transaction, ALLOWED_FIELDS_TO_CREATE);
-
-      const transactionCreated = await prisma.transactions.create({ data });
+      transaction.date = dayjs(transaction.date, DATE_FORMATED).toISOString();
+      const tran = getFieldsFromBody<Prisma.transactionsCreateInput>(transaction, ALLOWED_TRANSACTION_FIELDS_TO_CREATE);
+      const transactionCreated = await prisma.transactions.create({ data: tran });
       console.log('Debug_here transactionCreated: ', transactionCreated);
 
       return transactionCreated;
@@ -63,9 +64,7 @@ class TransactionModel {
       ...pagination,
     });
 
-    const results = queryResults.map((result) => convertSnakeKeyToCamelInObject<ITransaction>(result));
-
-    return results;
+    return queryResults;
   }
 
   public async retrieveById(transactionId: number) {
@@ -81,10 +80,13 @@ class TransactionModel {
   public async update(transaction: ITransaction) {
     try {
       const { id: transactionId, ...restTrans } = transaction;
-
-      const newTrans = convertCamelToSnakeInObject(restTrans, ALLOWED_FIELDS_TO_UPDATE);
+      const newTrans = getFieldsFromBody<Prisma.transactionsUpdateInput>(
+        restTrans,
+        ALLOWED_TRANSACTION_FIELDS_TO_UPDATE,
+      );
 
       const updateCrosscheck = await prisma.transactions.update({ where: { id: transactionId }, data: newTrans });
+
       return updateCrosscheck;
     } catch (error) {
       console.log('Debug_here error: ', error);
