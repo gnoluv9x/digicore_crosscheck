@@ -13,10 +13,15 @@ export default class TransactionController {
 
       res.status(201).send({ success: true, message: 'Thêm mới thành công', data: savedTrans });
     } catch (err) {
-      console.log('Debug_here err: ', err);
-      res.status(500).send({
-        message: 'Some error occurred while retrieving transactions.',
-      });
+      let message = 'Có lỗi xảy ra';
+      console.log('Debug_here err: ', { err });
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === 'P2002') {
+          message = `Không thể tạo giao dịch do trùng ${err.meta?.target}`;
+        }
+      }
+
+      res.status(500).send({ message });
     }
   }
 

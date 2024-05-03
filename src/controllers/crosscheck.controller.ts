@@ -45,28 +45,37 @@ export default class CrosscheckController {
       if (resultsCrosschecked.length === 0) {
         const fileName = generateCrosscheckFileName();
         console.log('Debug_here fileName with empty file: ', fileName);
-        return downloadExcel(resultsCrosschecked, res, excelFiles.fileDateRange, fileName);
+        return downloadExcel(resultsCrosschecked, res, excelFiles.fileDateRange, [], fileName);
       }
 
       const adminId = req.headers.adminid as string;
 
-      const crosscheckCreated = await crosscheckModel.save({
+      const crosscheckData = {
         adminId: parseInt(adminId),
         fileName: excelFiles.fileName,
         filePath: excelFiles.filePath,
         totalTrans: 0,
-      });
+      };
 
-      const crossCheckId = crosscheckCreated?.id;
-      console.log('Debug_here crossCheckId: ', crossCheckId);
+      await crosscheckModel.matchTransactions(crosscheckData, resultsCrosschecked);
 
-      const updatedRecords = await crosscheckModel.updateMultipleTransactions(resultsCrosschecked, crossCheckId!);
+      // const crosscheckCreated = await crosscheckModel.save({
+      //   adminId: parseInt(adminId),
+      //   fileName: excelFiles.fileName,
+      //   filePath: excelFiles.filePath,
+      //   totalTrans: 0,
+      // });
 
-      await crosscheckModel.updateTotalTrans(crossCheckId!, updatedRecords?.length || 0);
+      // const crossCheckId = crosscheckCreated?.id;
+      // console.log('Debug_here crossCheckId: ', crossCheckId);
+
+      // const updatedRecords = await crosscheckModel.updateMultipleTransactions(resultsCrosschecked, crossCheckId!);
+
+      // await crosscheckModel.updateTotalTrans(crossCheckId!, updatedRecords?.length || 0);
 
       const fileName = generateCrosscheckFileName();
 
-      return downloadExcel(resultsCrosschecked, res, excelFiles.fileDateRange, fileName);
+      return downloadExcel(resultsCrosschecked, res, excelFiles.fileDateRange, [], fileName);
     } catch (err) {
       console.log('Debug_here err: ', err);
       return res.status(500).send({

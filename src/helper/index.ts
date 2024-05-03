@@ -1,4 +1,5 @@
 import { DATE_FORMATED, EXCEL_FILE_DATE_FORMATED } from '@/constants';
+import { DETAIL_HEADERS, GENERAL_HEADERS } from '@/constants/excel';
 import { FileDateRange, ICrosscheckAfterMatchList } from '@/types/file.type';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -68,15 +69,30 @@ export const getQueryStringUpdateCrosscheck = (
   return queryString;
 };
 
-export function downloadExcel(listings: any[], res: Response, dateRange: FileDateRange, filename?: string) {
+export function downloadExcel(
+  generalListings: any[],
+  res: Response,
+  dateRange: FileDateRange,
+  detailListings: any[],
+  filename?: string,
+) {
   try {
     const workbook = xlsx.utils.book_new();
 
     const dateRangeString = `Từ ngày: ${dateRange?.from || '---'} đến ngày: ${dateRange?.to || '---'} `;
 
-    const generalSheet = xlsx.utils.aoa_to_sheet([['TỔNG HỢP KẾT QUẢ BÁN GÓI QUA 9084'], [dateRangeString], listings]);
-
-    const detailsSheet = xlsx.utils.aoa_to_sheet([['CHI TIẾT KẾT QUẢ BÁN GÓI QUA 9084'], [dateRangeString], []]);
+    const generalSheet = xlsx.utils.aoa_to_sheet([
+      ['TỔNG HỢP KẾT QUẢ BÁN GÓI QUA 9084'],
+      [dateRangeString],
+      GENERAL_HEADERS,
+      generalListings,
+    ]);
+    const detailsSheet = xlsx.utils.aoa_to_sheet([
+      ['CHI TIẾT KẾT QUẢ BÁN GÓI QUA 9084'],
+      [dateRangeString],
+      DETAIL_HEADERS,
+      detailListings,
+    ]);
 
     xlsx.utils.book_append_sheet(workbook, generalSheet, 'Tổng hợp');
     xlsx.utils.book_append_sheet(workbook, detailsSheet, 'Chi tiết');

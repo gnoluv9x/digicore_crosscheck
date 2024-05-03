@@ -84,7 +84,7 @@ class ExcelMiddleware {
         // file excel không có data
         if (jsonData.length === 2) {
           const fileName = generateCrosscheckFileName();
-          return downloadExcel([], res, fileDateRange, fileName);
+          return downloadExcel([], res, fileDateRange, [], fileName);
         }
 
         const excelData: IFileRequest = {

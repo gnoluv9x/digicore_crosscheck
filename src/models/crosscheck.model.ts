@@ -42,7 +42,7 @@ class CrosscheckModel {
     }
   }
 
-  public async updateTotalTrans(crosscheckId: number, trans: number) {
+  public async updateTotalTrans(crosscheckId: number, trans: number, prisma: any) {
     try {
       const updateCrosscheck = await prisma.crosscheck.update({
         where: { id: crosscheckId },
@@ -74,6 +74,48 @@ class CrosscheckModel {
       );
 
       return updateMany;
+    } catch (error) {
+      console.log('Debug_here error: ', error);
+      throw error;
+    }
+  }
+
+  public async matchTransactions(
+    crosscheckData: Prisma.crosscheckCreateInput,
+    listCrosscheck: ICrosscheckAfterMatchList[],
+  ) {
+    try {
+      prisma.$transaction(async (tx) => {
+        // create crosscheck
+        const crosscheck = getFieldsFromBody<Prisma.crosscheckCreateInput>(
+          crosscheckData,
+          ALLOWED_CROSSCHECK_FIELDS_TO_CREATE,
+        );
+        const createdCrosscheck = await tx.crosscheck.create({ data: crosscheck });
+        const crosscheckId = createdCrosscheck?.id;
+
+        // update trans
+        const crosscheckPromises = listCrosscheck.map((crosscheck) => {
+          const crossCheckStatus = crosscheck.TT === 'Thành công' ? 'success' : 'fail';
+          const date = dayjs().toISOString();
+
+          return tx.transactions.update({
+            where: { id: crosscheck.tranId },
+            data: {
+              crossCheckStatus: crossCheckStatus,
+              crossCheckDate: date,
+              crossCheckId: crosscheckId,
+            },
+          });
+        });
+        const updatedTrans = await Promise.all(crosscheckPromises);
+
+        // update total trans
+        await tx.crosscheck.update({
+          where: { id: crosscheckId },
+          data: { totalTrans: updatedTrans.length || 0 },
+        });
+      });
     } catch (error) {
       console.log('Debug_here error: ', error);
       throw error;
